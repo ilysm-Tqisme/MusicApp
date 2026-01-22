@@ -1,46 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:app_music/screens/auth/resgister_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
+  // ================= Controllers =================
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  // ================= Focus =================
+  final FocusNode _nameFocus = FocusNode();
   final FocusNode _emailFocus = FocusNode();
   final FocusNode _passwordFocus = FocusNode();
 
   bool _obscurePassword = true;
 
+  // ================= Dispose =================
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+
+    _nameFocus.dispose();
     _emailFocus.dispose();
     _passwordFocus.dispose();
+
     super.dispose();
   }
 
+  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      resizeToAvoidBottomInset: true, // ⭐ FIX OVERFLOW
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
-          // ⭐ CHỐNG OVERFLOW
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
 
-              // ===== Back button =====
+              // ===== Back =====
               IconButton(
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -50,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // ===== Title =====
               const Text(
-                'Log in',
+                'Create Account',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 32,
@@ -59,6 +67,21 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
 
               const SizedBox(height: 32),
+
+              // ===== Name =====
+              _inputLabel('Name'),
+              _textField(
+                controller: _nameController,
+                hintText: 'Enter your name',
+                focusNode: _nameFocus,
+                keyboardType: TextInputType.name,
+                textInputAction: TextInputAction.next,
+                onSubmitted: (_) {
+                  FocusScope.of(context).requestFocus(_emailFocus);
+                },
+              ),
+
+              const SizedBox(height: 20),
 
               // ===== Email =====
               _inputLabel('Email'),
@@ -81,12 +104,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 30),
 
-              // ===== Login button =====
+              // ===== Register button =====
               SizedBox(
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: _handleLogin,
+                  onPressed: _handleRegister,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1DB954),
                     shape: RoundedRectangleBorder(
@@ -94,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   child: const Text(
-                    'Log in',
+                    'Create account',
                     style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
@@ -108,22 +131,14 @@ class _LoginScreenState extends State<LoginScreen> {
               // ===== Footer =====
               Center(
                 child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const RegisterScreen(),
-                      ),
-                    );
-                  },
+                  onPressed: () => Navigator.pop(context),
                   child: const Text(
-                    "Don't have an account? Sign up",
+                    'Already have an account? Log in',
                     style: TextStyle(color: Colors.white70),
                   ),
                 ),
               ),
 
-              // ⭐ khoảng trống để tránh bàn phím che
               SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
             ],
           ),
@@ -181,10 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
       focusNode: _passwordFocus,
       obscureText: _obscurePassword,
       textInputAction: TextInputAction.done,
-      onSubmitted: (_) {
-        FocusScope.of(context).unfocus();
-        _handleLogin();
-      },
+      onSubmitted: (_) => _handleRegister(),
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         hintText: 'Enter your password',
@@ -212,18 +224,22 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // ================= Logic =================
 
-  void _handleLogin() {
+  void _handleRegister() {
+    final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
       return;
     }
 
+    debugPrint('Name: $name');
     debugPrint('Email: $email');
     debugPrint('Password: $password');
+
+    // TODO: Firebase register + OTP
   }
 }
